@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
@@ -33,13 +34,19 @@ import uk.gov.forestresearch.forestmodels.gales.FGStandU;
 import uk.gov.forestresearch.forestmodels.gales.FGTreeU;
 import uk.gov.forestresearch.forestmodels.gales.ForestGalesTreeMechanics;
 
+
+// RESULTS_COLUMNS defines how many result columns in the table
+// SPECIES_FILENAME defines the name of the species file - no other file will be opened
 public class ForestGalesApp {
 
+	public final int RESULTS_COLUMNS = 2;
+	public final String SPECIES_FILENAME = "species.txt";
 	final JFrame frame = new JFrame();
 	private int header1 = 0;
 	private int header2 = 1000;
 	private int header3 = 3;
 	private int header4 = 0;
+	private final int resultColumns = 2;
 
 	private JList speciesList = new JList();
 	private MyTableModel tableModel = new MyTableModel();
@@ -71,7 +78,7 @@ public class ForestGalesApp {
 	}
 
 	private void initialize() {
-		frame.setBounds(100, 100, 800, 500);
+		frame.setBounds(100, 100, 1000, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JPanel northPanel = new JPanel();
@@ -125,6 +132,8 @@ public class ForestGalesApp {
 		btnProcess.addActionListener(new ActionListener() {	
 			public void actionPerformed(ActionEvent e) {
 				String selectedValue = (String) speciesList.getSelectedValue();
+				if(selectedValue == null)
+					return;
 				String splitValues[] = selectedValue.split("\\t");
 				treeCode = splitValues[0];
 				int rows = tableModel.getRowCount();
@@ -138,8 +147,11 @@ public class ForestGalesApp {
 					row.setValue(3, mech.getProbOfBreak());
 					row.setValue(4, mech.getProbOfOverturn());
 				}
-				tableModel.fireTableRowsInserted(tableModel.rows.size() - 1, tableModel.rows.size() - 1);
 				writeResultFile();
+				btnProcess.setEnabled(false);
+
+				tableModel.fireTableRowsInserted(tableModel.rows.size() - 1, tableModel.rows.size() - 1);
+				frame.repaint();
 			}
 		});
 		
@@ -147,11 +159,11 @@ public class ForestGalesApp {
 
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getValueIsAdjusting() == false) {
-					if (speciesList.getSelectedIndex() == -1) {
-						btnProcess.setEnabled(false);
+					if (speciesList.getSelectedIndex() != -1 && tableModel.getRowCount() > 0) {
+						btnProcess.setEnabled(true);
 
 					} else {
-						btnProcess.setEnabled(true);
+						btnProcess.setEnabled(false);
 					}
 				}
 			}
@@ -162,6 +174,8 @@ public class ForestGalesApp {
 
 	private void readSpeciesFile(File f)
 	{
+		if(!f.getName().equalsIgnoreCase(SPECIES_FILENAME))
+			return;
 		BufferedReader br = null;
 		listModel = new DefaultListModel();
 		try {
@@ -197,10 +211,20 @@ public class ForestGalesApp {
 			header3 = Integer.parseInt(br.readLine()); // Columns
 			header4 = Integer.parseInt(br.readLine());
 			
+			tableModel.clear();
+			
 			while ((sCurrentLine = br.readLine()) != null && lineCounter < header2) {
 				String dataVariables[] = sCurrentLine.split("\\t");
-				if(dataVariables.length == header3)
-					tableModel.addRow(new Row(dataVariables));
+				double rowVariables[] = new double[header3+RESULTS_COLUMNS];
+				
+				if(dataVariables.length == header3) {
+					for(int i=0; i < header3; i++) {
+						rowVariables[i] = Double.parseDouble(dataVariables[i]);
+					}
+					rowVariables[header3] = 0;
+					rowVariables[header3+1] = 0;
+					tableModel.addRow(new Row(rowVariables));
+				}
 				lineCounter++;
 			}
 			tableModel.fireTableRowsInserted(tableModel.rows.size() - 1, tableModel.rows.size() - 1);
@@ -220,8 +244,18 @@ public class ForestGalesApp {
 	private void writeResultFile()
 	{
 		try {
-			File file = new File(fileDirectory.replace(".txt", ".out"));
- 
+			int windowsDir = fileDirectory.lastIndexOf('\\');
+			int macDir = fileDirectory.lastIndexOf('/');
+			String fileName = "";
+			Date dateNow = new Date();
+			
+			if(macDir != -1)
+				fileName = fileDirectory.substring(0, macDir+1);
+			else
+				fileName = fileDirectory.substring(0, windowsDir+1);
+			
+			File file = new File(fileName + "results_" + treeCode + ".txt");
+
 			if (!file.exists()) {
 				file.createNewFile();
 			}
@@ -246,10 +280,8 @@ public class ForestGalesApp {
 	private class Row {
 		  private final double[] values;
 
-		  public Row(String[] stringValues) {
-			values = new double[stringValues.length];
-			for(int i=0; i<stringValues.length; i++)
-				values[i] = Double.parseDouble(stringValues[i]);
+		  public Row(double[] newValues) {
+			  values = newValues;
 		  }
 		  public int getSize() {
 		    return values.length;
@@ -261,6 +293,17 @@ public class ForestGalesApp {
 		  {
 			  if(column > -1 && column < values.length)
 				  values[column] = val;
+		  }
+		  
+		  @Override
+		  public String toString() {
+			  String results = "";
+			  if(values.length > 0) {
+				  results = Double.toString(values[0]);
+				  for(int i=1; i<values.length; i++)
+					  results += "\t" + Double.toString(values[i]);
+			  }
+			  return results;
 		  }
 	}
 	
@@ -292,6 +335,10 @@ public class ForestGalesApp {
 
 		  public Object getValue(int row, int column) {
 		    return rows.get(row).getValue(column);
+		  }
+		  
+		  public void clear() {
+			  rows.clear();
 		  }
 
 		  public Class<?> getColumnClass(int col) {
