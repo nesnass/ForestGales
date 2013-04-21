@@ -1,0 +1,12 @@
+SS	Sitka spruce	
+NS	Norway spruce	
+SP	Scots pine	
+LP	Lodgepole pine	
+CP	Corsican pine	
+EL	European larch	
+JL	Japanese larch	
+HL	Hybrid larch	
+DF	Douglas fir	
+GF	Grand fir	
+NF	Noble fir	
+WH	Western hemlock
