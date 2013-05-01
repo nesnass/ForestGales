@@ -28,8 +28,16 @@ public class FGTreeU
     protected double canopyBdth ;       // Used to calculate tree Charecteristics
     protected double canopyDepth;       // Used to calculate tree Charecteristics
     protected double stemDensity;       // Used to calculate tree Charecteristics
-    protected double canopyDensity;     // Used to calculate tree Charecteristics
-    protected double canopyHeight;      // Used to calculate tree Charecteristics
+    public void setStemDensity(double stemDensity) {
+		this.stemDensity = stemDensity;
+	}
+
+	protected double canopyDensity;     // Used to calculate tree Charecteristics
+    public void setCanopyDensity(double canopyDensity) {
+		this.canopyDensity = canopyDensity;
+	}
+
+	protected double canopyHeight;      // Used to calculate tree Charecteristics
     protected double midCanopy;         // Used to calculate tree Charecteristics
     public double snowWeight;           // Used to calculate tree Charecteristics
     public double stemWeight;          // Used to calculate tree Charecteristics
@@ -295,7 +303,7 @@ end;
   canopyDepth = getCanopyDepth();
 
   // Calculate Stem Density
-  stemDensity = 850;  // to initialise attribute
+  // stemDensity = 850;  // to initialise attribute
   /*case fSpecies of
     spSP..spDF: StemDensity := 850;  {Data from Finland}
     spNS,spSS : StemDensity := 850;  {Average for Sitka spruce in British tree pulling data base}{800 Data from Finland}
@@ -304,7 +312,7 @@ end;
   //end case
 
   // Calculate Canopy Density
-  canopyDensity = 2.5; //  {This bit needs analysis of Tree Pulling Database}
+  //canopyDensity = 2.5; //  {This bit needs analysis of Tree Pulling Database}
 
   // Calculate Canopy Height
   canopyHeight = meanHeight - canopyDepth;

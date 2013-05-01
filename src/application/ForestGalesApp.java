@@ -1,5 +1,11 @@
 package application;
 
+//////////////////////////////////////////////////
+//
+//   GUI interfacing authored by Richard Nesnass
+//   nesnass@gmail.com
+//
+
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -12,7 +18,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
@@ -34,29 +39,30 @@ import uk.gov.forestresearch.forestmodels.gales.FGStandU;
 import uk.gov.forestresearch.forestmodels.gales.FGTreeU;
 import uk.gov.forestresearch.forestmodels.gales.ForestGalesTreeMechanics;
 
-
-// RESULTS_COLUMNS defines how many result columns in the table
-// SPECIES_FILENAME defines the name of the species file - no other file will be opened
 public class ForestGalesApp {
 
+	// RESULTS_COLUMNS defines how many result columns in the table
+	// SPECIES_FILENAME defines the name of the species file - no other file will be opened
 	public final int RESULTS_COLUMNS = 2;
 	public final String SPECIES_FILENAME = "species.txt";
 	final JFrame frame = new JFrame();
+	@SuppressWarnings("unused")
 	private int header1 = 0;
-	private int header2 = 1000;
-	private int header3 = 3;
+	private int header2 = 1000;  // header2 must contain the number of rows
+	private int header3 = 3;   // header3  must contain the number of columns
+	@SuppressWarnings("unused")
 	private int header4 = 0;
-	private final int resultColumns = 2;
 
 	private JList speciesList = new JList();
-	private MyTableModel tableModel = new MyTableModel();
-	private JTable dataTable = new JTable(tableModel);
+	private MyTableModel tableModel;
+	private JTable dataTable;
 	private DefaultListModel listModel;
 	private JButton btnSpeciesFile = new JButton("Species file...");
 	private JButton btnDataFile = new JButton("Data file...");
 	private JButton btnProcess = new JButton("Process");
 	private String fileDirectory = "";
 	private String treeCode = "";
+	JScrollPane dataScrollPane;
 	
 	ForestGalesTreeMechanics mech;
 
@@ -87,9 +93,8 @@ public class ForestGalesApp {
 		JPanel southPanel = new JPanel();
 		frame.getContentPane().add(southPanel, BorderLayout.SOUTH);
 		
-		JScrollPane dataScrollPane = new JScrollPane(dataTable);
-		dataScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		frame.getContentPane().add(dataScrollPane, BorderLayout.CENTER);
+		
+		
 
 		speciesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		JScrollPane speciesScrollPane = new JScrollPane(speciesList);
@@ -143,9 +148,9 @@ public class ForestGalesApp {
 				for(int i=0; i< rows; i++)
 				{
 					row = tableModel.getRow(i);
-					runMechanics(treeCode, row.getValue(0), row.getValue(1), row.getValue(2));
-					row.setValue(3, mech.getProbOfBreak());
-					row.setValue(4, mech.getProbOfOverturn());
+					runMechanics(treeCode, row.getValues());
+					row.setValue(header3, mech.getProbOfBreak());
+					row.setValue(header3+1, mech.getProbOfOverturn());
 				}
 				writeResultFile();
 				btnProcess.setEnabled(false);
@@ -206,12 +211,20 @@ public class ForestGalesApp {
 			String sCurrentLine;
 			br = new BufferedReader(new FileReader(f));
 			int lineCounter = 0;
-			header1 = Integer.parseInt(br.readLine());
-			header2 = Integer.parseInt(br.readLine()); // Rows
-			header3 = Integer.parseInt(br.readLine()); // Columns
-			header4 = Integer.parseInt(br.readLine());
 			
-			tableModel.clear();
+			header1 = Integer.parseInt(br.readLine().trim());
+			header2 = Integer.parseInt(br.readLine().trim()); // Rows
+			header3 = Integer.parseInt(br.readLine().trim()); // Columns
+			header4 = Integer.parseInt(br.readLine().trim());
+			
+			tableModel = new MyTableModel(header3);
+			dataTable = new JTable(tableModel);
+
+			dataScrollPane = new JScrollPane(dataTable);	
+			dataTable.setFillsViewportHeight(true);
+			
+			dataScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			frame.getContentPane().add(dataScrollPane, BorderLayout.CENTER);
 			
 			while ((sCurrentLine = br.readLine()) != null && lineCounter < header2) {
 				String dataVariables[] = sCurrentLine.split("\\t");
@@ -221,13 +234,16 @@ public class ForestGalesApp {
 					for(int i=0; i < header3; i++) {
 						rowVariables[i] = Double.parseDouble(dataVariables[i]);
 					}
-					rowVariables[header3] = 0;
-					rowVariables[header3+1] = 0;
+					for(int j=0; j < RESULTS_COLUMNS; j++) {
+						rowVariables[header3+j] = 0;
+					}
 					tableModel.addRow(new Row(rowVariables));
 				}
 				lineCounter++;
 			}
+		//	tableModel.fireTableDataChanged();
 			tableModel.fireTableRowsInserted(tableModel.rows.size() - 1, tableModel.rows.size() - 1);
+			frame.validate();
  
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -247,7 +263,6 @@ public class ForestGalesApp {
 			int windowsDir = fileDirectory.lastIndexOf('\\');
 			int macDir = fileDirectory.lastIndexOf('/');
 			String fileName = "";
-			Date dateNow = new Date();
 			
 			if(macDir != -1)
 				fileName = fileDirectory.substring(0, macDir+1);
@@ -283,12 +298,17 @@ public class ForestGalesApp {
 		  public Row(double[] newValues) {
 			  values = newValues;
 		  }
+		  @SuppressWarnings("unused")
 		  public int getSize() {
 		    return values.length;
 		  }
 		  public double getValue(int i) {
 		    return values[i];
 		  }
+		  public double[] getValues() {
+			  return values;
+		  }
+		  
 		  public void setValue(int column, double val)
 		  {
 			  if(column > -1 && column < values.length)
@@ -311,16 +331,25 @@ public class ForestGalesApp {
 
 		private static final long serialVersionUID = 8127511298523094046L;
 		private final List<Row> rows;
-		private String[] columnNames = {"Variable 1",
-	            "Variable 2",
-	            "Variable 3",
-	            "P(Stem Breakage)",
-	            "P(Overturn)"};
+		private String[] columnNames;
 
 		  public MyTableModel() {
 		    this.rows = new ArrayList<Row>();
 		  }
 
+		  public MyTableModel(int dataColumns) {
+			    this();
+		    	columnNames = new String[dataColumns+RESULTS_COLUMNS];
+			    for(int i=0; i< dataColumns;i++)
+			    {
+			    	columnNames[i] = "V " + String.valueOf(i+1);
+			    }
+			    for(int j=0; j< RESULTS_COLUMNS; j++)
+			    {
+			    	columnNames[dataColumns+j] = "R " + String.valueOf(j+1);
+			    }
+		  }
+		  
 		  public int getRowCount() {
 		    return rows.size();
 		  }
@@ -330,7 +359,7 @@ public class ForestGalesApp {
 		  }
 		  
 		  public String getColumnName(int col) {
-		        return columnNames[col];
+		        return columnNames[col].toString();
 		  }
 
 		  public Object getValue(int row, int column) {
@@ -361,58 +390,61 @@ public class ForestGalesApp {
 		  }
 		}
 	
-	public void runMechanics(String treeType, double variable1, double variable2, double variable3) {
+	public void runMechanics(String treeType, double[] variables) {
+		
+		
+// Here specify how input variables are applied to the simulation
+// Variables in code correlate to Excel Spreadsheet subtract 1:  V - 1
+		
 		FGTreeU tree = new FGTreeU();
+		FGStandU stand = new FGStandU();
+		
+		tree.setSpecies(treeType);
 
-		double noOfTrees = 1000;
-		double effectiveSpacing = Math.sqrt( 10000.0d/noOfTrees );
-		double dams = 18;//10-sheltered 15-18 moderately exposed 19+ severely exposed - no forestry generally above dams 22
+// Variables used in code, but not defined in Excel sheet:
+		double dams = 18;     //10-sheltered 15-18 moderately exposed 19+ severely exposed - no forestry generally above dams 22
 		tree.setDominance("mean");
 		tree.setForceMethod("");
-		//   if(treeType != "")
-		//  	tree.setSpecies(treeType);
-		//  else
-		tree.setSpecies("SS");
-
-		//    if(variable1 != 0)
-		//   	tree.setYC(variable1);
-		//  else
 		tree.setYC( 16 );
-
-
-		tree.setMeanDbh( 19 );
 		tree.setTopHeight( 22 );
-		tree.treeCharacteristics( effectiveSpacing );
 
-		String soil = "Gley";
 		String cult = "Notched";
-
-		FGStandU stand = new FGStandU();
-		stand.setAge( 40 );
 		stand.setCultivation( cult );
 		stand.setDrainage("Average");
+		
+// Variable 1:  Age
+		stand.setAge((int) variables[0]);
+		
+// Variable 2:  Planting Year
+		stand.setPlantingYear((int) variables[1]);
+		
+// Variable 3:  "Gley"   Set in code at present
+		String soil = "Gley";
+		stand.setSoil(soil);
+		
+// Variable 5:  DBH
+		tree.setMeanDbh((double) variables[4]);
+		
+// Variable 9:  Stem Density
+		tree.setStemDensity((double) variables[8]);
 
-		//use soil and mapper to nail nasty bug
-		stand.setSoil( soil );
+// Variable 15: Crown Density
+		tree.setCanopyDensity((double) variables[14]);
+		
+// Variable 21: Spacing
+		// double effectiveSpacing = Math.sqrt( 10000.0d/noOfTrees );
+		double effectiveSpacing = ((double) variables[20]);
+		
+// The next set of variables are set internally by calling this method:		
+		tree.treeCharacteristics( effectiveSpacing );
 
-
+// Create a new simulator
 		mech = new ForestGalesTreeMechanics( stand.getCultivation(), stand.getSoil(), tree.getSpecies(), stand.getDrainage(), dams, tree.getMeanHeight(), tree.getCanopyBreadth(effectiveSpacing), tree.getCanopyDepth(), effectiveSpacing, 0 );//String cultivation, String Soil, String treeSpecies, double dams, double meanHeight) {
 		mech.setBrownEdge( false );
-		//mech.setGapWidth( 5.0 );
-		//mech.setBrownEdge( true );
+		
+// Run the simulations
 		mech.doCalculations( effectiveSpacing, tree.stemWeight, tree.Diam[0], tree.getCanopyBreadth( effectiveSpacing), tree.getCanopyDepth(), tree.Diam, tree.Z, tree.mass , tree.getMeanDbh() );
-
-		/*long startTime = new java.util.Date().getTime();
-	        for(int i = 0 ; i < 100 ; i++)
-	            mech.doCalculations( effectiveSpacing, tree.stemWeight, tree.Diam[0], tree.getCanopyBreadth( effectiveSpacing), tree.getCanopyDepth(), tree.Diam, tree.Z, tree.mass , tree.getMeanDbh() );
-
-	        long endTime   = new java.util.Date().getTime();*/
-		//     System.out.println("Probability of stem breakage " + mech.getProbOfBreak()    * 100   + "%" );
-		//     System.out.println("Probability of overturn "      + mech.getProbOfOverturn() * 100   + "%" );
-		//System.out.println( "time taken = " + (endTime - startTime) );
 
 		return;
 	}
-	
-	
 }
