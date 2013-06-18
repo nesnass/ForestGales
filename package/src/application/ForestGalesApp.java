@@ -149,8 +149,8 @@ public class ForestGalesApp {
 				{
 					row = tableModel.getRow(i);
 					runMechanics(treeCode, row.getValues());
-					row.setValue(header3, mech.getProbOfBreak());
-					row.setValue(header3+1, mech.getProbOfOverturn());
+					row.setValue(header3, String.valueOf(mech.getProbOfBreak()));
+					row.setValue(header3+1, String.valueOf(mech.getProbOfOverturn()));
 				}
 				writeResultFile();
 				btnProcess.setEnabled(false);
@@ -228,14 +228,14 @@ public class ForestGalesApp {
 			
 			while ((sCurrentLine = br.readLine()) != null && lineCounter < header2) {
 				String dataVariables[] = sCurrentLine.split("\\t");
-				Double rowVariables[] = new Double[header3+RESULTS_COLUMNS];
+				String rowVariables[] = new String[header3+RESULTS_COLUMNS];
 				
 				if(dataVariables.length == header3) {
 					for(int i=0; i < header3; i++) {
-						rowVariables[i] = Double.valueOf(dataVariables[i]);
+						rowVariables[i] = dataVariables[i];
 					}
 					for(int j=0; j < RESULTS_COLUMNS; j++) {
-						rowVariables[header3+j] = 0.0;
+						rowVariables[header3+j] = "0";
 					}
 					tableModel.addRow(new Row(rowVariables));
 				}
@@ -259,8 +259,6 @@ public class ForestGalesApp {
 	
 	private void writeResultFile()
 	{
-
-		
 		try {
 			int windowsDir = fileDirectory.lastIndexOf('\\');
 			int macDir = fileDirectory.lastIndexOf('/');
@@ -280,16 +278,12 @@ public class ForestGalesApp {
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 			
-			// Header
-			bw.write(String.valueOf(RESULTS_COLUMNS) + "\n" + "ProbOfBreak" + "\n" + "ProbOfOverturn" + "\n" + "time = no" + "\n" + String.valueOf(header2) + "\n");
-			
 			int rowCount = tableModel.getRowCount();
 			Row row;
 			for(int i=0; i<rowCount; i++)
 			{
 				row = tableModel.getRow(i);
-			//	bw.write(row.toString() + "\n");
-				bw.write(row.getValue(header3) + "\t" + row.getValue(header3+1) + "\n");
+				bw.write(row.toString() + "\n");
 			}
 			bw.close();
  
@@ -299,9 +293,9 @@ public class ForestGalesApp {
 	}
 	
 	private class Row {
-		  private final Double[] values;
+		  private final String[] values;
 
-		  public Row(Double[] newValues) {
+		  public Row(String[] newValues) {
 			  values = newValues;
 		  }
 		  @SuppressWarnings("unused")
@@ -309,13 +303,13 @@ public class ForestGalesApp {
 		    return values.length;
 		  }
 		  public String getValue(int i) {
-		    return String.valueOf(values[i]);
+		    return values[i];
 		  }
-		  public Double[] getValues() {
+		  public String[] getValues() {
 			  return values;
 		  }
 		  
-		  public void setValue(int column, Double val)
+		  public void setValue(int column, String val)
 		  {
 			  if(column > -1 && column < values.length)
 				  values[column] = val;
@@ -325,7 +319,7 @@ public class ForestGalesApp {
 		  public String toString() {
 			  String results = "";
 			  if(values.length > 0) {
-				  results = String.valueOf(values[0]);
+				  results = values[0];
 				  for(int i=1; i<values.length; i++)
 					  results += "\t" + values[i];
 			  }
@@ -396,7 +390,7 @@ public class ForestGalesApp {
 		  }
 		}
 	
-	public void runMechanics(String treeType, Double[] variables) {
+	public void runMechanics(String treeType, String[] variables) {
 		
 		
 // Here specify how input variables are applied to the simulation
@@ -415,38 +409,38 @@ public class ForestGalesApp {
 
 
 // Variable 1:  Age
-		stand.setAge(variables[0].intValue());
+		stand.setAge(Integer.parseInt(variables[0]));
 		
 // Variable 2:  Planting Year
-		stand.setPlantingYear(variables[1].intValue());
+		stand.setPlantingYear(Integer.parseInt(variables[1]));
 		
 // Variable 3:  soil type
-		stand.setSoil(variables[2].intValue());
+		stand.setSoil(variables[2]);
 		
 // Variable 5:  DBH
-		tree.setMeanDbh(variables[4]);
+		tree.setMeanDbh(Double.parseDouble(variables[4]));
 		
 // Variable 9:  Stem Density
-		tree.setStemDensity(variables[8]);
+		tree.setStemDensity(Double.parseDouble(variables[8]));
 
 // Variable 15: Crown Density
-		tree.setCanopyDensity(variables[14]);
+		tree.setCanopyDensity(Double.parseDouble(variables[14]));
 		
 // Variable 21: Spacing
 		// double effectiveSpacing = Math.sqrt( 10000.0d/noOfTrees );
-		double effectiveSpacing = (variables[20]);
+		double effectiveSpacing = (Double.parseDouble(variables[20]));
 
 // Variable 23: dams
-		double dams = (variables[22]);     //10-sheltered 15-18 moderately exposed 19+ severely exposed - no forestry generally above dams 22
+		double dams = (Double.parseDouble(variables[22]));     //10-sheltered 15-18 moderately exposed 19+ severely exposed - no forestry generally above dams 22
 		
 // Variable 24: topHeight
-		tree.setTopHeight(variables[23]);
+		tree.setTopHeight(Double.parseDouble(variables[23]));
 
 // Variable 25: cultivation
-		stand.setCultivation( variables[24].intValue() );
+		stand.setCultivation( variables[24] );
 		
 // Variable 26: drainage
-		stand.setDrainage(variables[25].intValue());
+		stand.setDrainage(variables[25]);
 	
 // The next set of variables are set internally by calling this method:		
 		tree.treeCharacteristics( effectiveSpacing );
@@ -455,7 +449,7 @@ public class ForestGalesApp {
 		mech = new ForestGalesTreeMechanics( stand.getCultivation(), stand.getSoil(), tree.getSpecies(), stand.getDrainage(), dams, tree.getMeanHeight(), tree.getCanopyBreadth(effectiveSpacing), tree.getCanopyDepth(), effectiveSpacing, 0 );//String cultivation, String Soil, String treeSpecies, double dams, double meanHeight) {
 
 // Variable 27: edge		
-		mech.setBrownEdge( Boolean.parseBoolean(String.valueOf(variables[26])));
+		mech.setBrownEdge( Boolean.parseBoolean(variables[26]) );
 		
 // Run the simulations
 		mech.doCalculations( effectiveSpacing, tree.stemWeight, tree.Diam[0], tree.getCanopyBreadth( effectiveSpacing), tree.getCanopyDepth(), tree.Diam, tree.Z, tree.mass , tree.getMeanDbh() );

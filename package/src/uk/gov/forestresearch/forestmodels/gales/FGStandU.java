@@ -4,10 +4,10 @@ package uk.gov.forestresearch.forestmodels.gales;
 public class FGStandU{
 
 public FGStandU(){}
-private int soil;
+private String soil;
 private double soilScore;
-private int cultivation;
-private int drainage;
+private String cultivation;
+private String drainage;
 private int age;
 private int plantingYear;
 
@@ -41,16 +41,13 @@ end;
 }
 
 
-public int drainageToInt (int drainage){
-	return drainage;
-/*	
+public int drainageToInt (String drainage){
     // function to convert Drainage types to byte as requited in the ForestGALES calculations
     if( drainage.equalsIgnoreCase( "none ")) return 0;
     else if( drainage.equalsIgnoreCase( "average") ) return 1;
     else if( drainage.equalsIgnoreCase("poor")) return 2;
     else if( drainage.equalsIgnoreCase("good")) return 3;
     else return 0;
-*/
 }
 
 /*function FCSoilToInt (AFCSoil : FCSoil): byte;
@@ -85,7 +82,7 @@ end;
 
 
 
- /*   public double calcSoilScore(String soil){
+    public double calcSoilScore(String soil){
         if( soil.equalsIgnoreCase("Brown Earth")) return 0;
         if( soil.equalsIgnoreCase("Integrade (Brown Earth-Ironpan)")) return 0;
         if( soil.equalsIgnoreCase("Podzol")) return 0;
@@ -103,12 +100,12 @@ end;
         if( soil.equalsIgnoreCase("Littoral Soil")) return 0;
         return 10;
     }
-*/
-    public int getSoil() {
+
+    public String getSoil() {
         return soil;
     }
 
-    public void setSoil(int soil) {
+    public void setSoil(String soil) {
         this.soil = soil;
     }
 
@@ -120,19 +117,19 @@ end;
         this.soilScore = soilScore;
     }
 
-    public int getCultivation() {
+    public String getCultivation() {
         return cultivation;
     }
 
-    public void setCultivation(int cultivation) {
+    public void setCultivation(String cultivation) {
         this.cultivation = cultivation;
     }
 
-    public int getDrainage() {
+    public String getDrainage() {
         return drainage;
     }
 
-    public void setDrainage(int drainage) {
+    public void setDrainage(String drainage) {
         this.drainage = drainage;
     }
 

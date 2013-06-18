@@ -156,7 +156,7 @@ public class ForestGalesTreeMechanics {
         beyondRangeFlag = false;
     }
 
-    public ForestGalesTreeMechanics( int cultivation, int soil, String treeSpecies, int drainage,  double dams, double meanHeight, double canopyBreadth, double canopyWidth, double spacing, double gap ) {
+    public ForestGalesTreeMechanics( String cultivation, String soil, String treeSpecies, String drainage,  double dams, double meanHeight, double canopyBreadth, double canopyWidth, double spacing, double gap ) {
         //if( edge > 0.0 )brownEdge = false;
         //setBrownEdge( edge != 0.0 );
         //this.edge = 93.736801147;
@@ -175,7 +175,7 @@ public class ForestGalesTreeMechanics {
     
     
     
-    public ForestGalesTreeMechanics( int cultivation, int soil, String treeSpecies, int drainage,  double dams, double meanHeight, double canopyBreadth, double canopyWidth, double spacing ) {
+    public ForestGalesTreeMechanics( String cultivation, String soil, String treeSpecies, String drainage,  double dams, double meanHeight, double canopyBreadth, double canopyWidth, double spacing ) {
         this();
         this.dams = dams;
         this.gapWidth = meanHeight * 10;
@@ -254,8 +254,7 @@ public class ForestGalesTreeMechanics {
     }    
     
     private int getCultivationScore(){ // move these properties to the cultivation XML file
-    	return cultivation;
-/*        if( cultivation.equalsIgnoreCase( "Notched" ) )
+        if( cultivation.equalsIgnoreCase( "Notched" ) )
             return 1;
         if( cultivation.equalsIgnoreCase( "Complete Ploughing" ) )
             return 1;
@@ -278,12 +277,10 @@ public class ForestGalesTreeMechanics {
         if( cultivation.equalsIgnoreCase( "Mound planting" ) )
             return 1;        
         return 0;
-*/
     }
     
     private int getSoilScore(){ // move these properties to the soil XML file
-    	return soil;
- /*  	if( soil.equalsIgnoreCase("Brown Earth")) return 1;
+        if( soil.equalsIgnoreCase("Brown Earth")) return 1;
         if( soil.equalsIgnoreCase("Intergrade (Brown Earth-Ironpan)")) return 1;
         if( soil.equalsIgnoreCase("Podzol")) return 1;
         if( soil.equalsIgnoreCase("Iron Pan")) return 1;
@@ -299,7 +296,6 @@ public class ForestGalesTreeMechanics {
         if( soil.equalsIgnoreCase("Eroded Bog")) return 3;
         if( soil.equalsIgnoreCase("Littoral Soil")) return 2;
         return 0;
-*/
     }
     
     private int getSpeciesIndex(){
@@ -349,8 +345,8 @@ public class ForestGalesTreeMechanics {
         else if( stemWeight > maxWt ) beyondRangeFlag = true;
         double RM = notch * multiplierArray[ specIdx-1][soilIdx-1][cultIdx-1 ] / 100;
         double overturnMoment = RM * stemWeight;
-        if( drainage == 1 ) return overturnMoment;   // 'average' == 1
-        else if( drainage == 2 ) return overturnMoment * 0.8;  // 'poor' == 2
+        if( drainage.equalsIgnoreCase( "average") ) return overturnMoment;
+        else if( drainage.equalsIgnoreCase( "poor") ) return overturnMoment * 0.8;
         else return overturnMoment * 1.2;
     }
     
@@ -771,9 +767,9 @@ public class ForestGalesTreeMechanics {
     private int speciesScore;
     
     private String species;
-    private int soil;
-    private int cultivation;
-    private int drainage;
+    private String soil;
+    private String cultivation;
+    private String drainage;
     
     private double dams;
     private double meanHeight;
