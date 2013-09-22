@@ -414,39 +414,39 @@ public class ForestGalesApp {
 		tree.setYC( 16 );				// getYC not called anywhere in code.
 
 
-// Variable 1:  Age
+// Variable 0:  Age
 		stand.setAge(variables[0].intValue());
 		
-// Variable 2:  Planting Year
+// Variable 1:  Planting Year
 		stand.setPlantingYear(variables[1].intValue());
-		
-// Variable 3:  soil type
+			
+// Variable 2:  soil type
 		stand.setSoil(variables[2].intValue());
 		
-// Variable 5:  DBH
-		tree.setMeanDbh(variables[4]);
+// Variable 3:  DBH
+		tree.setMeanDbh(variables[3]);
 		
-// Variable 9:  Stem Density
-		tree.setStemDensity(variables[8]);
+// Variable 4:  Stem Density
+		tree.setStemDensity(variables[4]);
 
-// Variable 15: Crown Density
-		tree.setCanopyDensity(variables[14]);
+// Variable 5: Crown Density
+		tree.setCanopyDensity(variables[5]);
 		
-// Variable 21: Spacing
+// Variable 6: Spacing
 		// double effectiveSpacing = Math.sqrt( 10000.0d/noOfTrees );
-		double effectiveSpacing = (variables[20]);
+		double effectiveSpacing = (variables[6]);
 
-// Variable 23: dams
-		double dams = (variables[22]);     //10-sheltered 15-18 moderately exposed 19+ severely exposed - no forestry generally above dams 22
+// Variable 7: dams
+		double dams = (variables[7]);     //10-sheltered 15-18 moderately exposed 19+ severely exposed - no forestry generally above dams 22
 		
-// Variable 24: topHeight
-		tree.setTopHeight(variables[23]);
+// Variable 8: topHeight
+		tree.setTopHeight(variables[8]);
 
-// Variable 25: cultivation
-		stand.setCultivation( variables[24].intValue() );
+// Variable 9: cultivation
+		stand.setCultivation( variables[9].intValue() );
 		
-// Variable 26: drainage
-		stand.setDrainage(variables[25].intValue());
+// Variable 10: drainage
+		stand.setDrainage(variables[10].intValue());
 	
 // The next set of variables are set internally by calling this method:		
 		tree.treeCharacteristics( effectiveSpacing );
@@ -454,8 +454,8 @@ public class ForestGalesApp {
 // Create a new simulator
 		mech = new ForestGalesTreeMechanics( stand.getCultivation(), stand.getSoil(), tree.getSpecies(), stand.getDrainage(), dams, tree.getMeanHeight(), tree.getCanopyBreadth(effectiveSpacing), tree.getCanopyDepth(), effectiveSpacing, 0 );//String cultivation, String Soil, String treeSpecies, double dams, double meanHeight) {
 
-// Variable 27: edge		
-		mech.setBrownEdge( Boolean.parseBoolean(String.valueOf(variables[26])));
+// Variable 11: edge		
+		mech.setBrownEdge( Boolean.parseBoolean(String.valueOf(variables[11])));
 		
 // Run the simulations
 		mech.doCalculations( effectiveSpacing, tree.stemWeight, tree.Diam[0], tree.getCanopyBreadth( effectiveSpacing), tree.getCanopyDepth(), tree.Diam, tree.Z, tree.mass , tree.getMeanDbh() );
